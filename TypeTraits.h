@@ -56,11 +56,12 @@ struct RemoveVolatile<volatile T> {
 	typedef T type;
 };
 
+// nested dependent name
 template
 <typename T>
 struct RemoveCv {
-	typedef RemoveVolatile<
-		RemoveConst<T>::type
+	typedef typename RemoveVolatile<
+		typename RemoveConst<T>::type
 	>::type type;
 };
 
@@ -71,7 +72,7 @@ struct RemoveCv {
 // Otherwise, value is equal to false.
 template
 <typename T>
-struct IsVoid : IsSame<void, RemoveCv<T>::type>{
+struct IsVoid : IsSame<void, typename RemoveCv<T>::type>{
 };
 
 // something about const void
@@ -84,7 +85,7 @@ struct IsVoid : IsSame<void, RemoveCv<T>::type>{
 // Otherwise, value is equal to false.
 template
 <typename T>
-struct IsNullPointer : IsSame<nullptr_t, RemoveCv<T>::type> {
+struct IsNullPointer : IsSame<nullptr_t, typename RemoveCv<T>::type> {
 };
 
 // Checks whether T is an integral type. 
@@ -93,3 +94,149 @@ struct IsNullPointer : IsSame<nullptr_t, RemoveCv<T>::type> {
 // or any implementation-defined extended integer types, 
 // including any signed, unsigned, and cv-qualified variants. 
 // Otherwise, value is equal to false.
+template
+<typename T>
+struct _IsIntergralBase : FalseType {
+};
+
+template 
+<>
+struct _IsIntergralBase <bool> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <char> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <unsigned char> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <char16_t> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <char32_t> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <wchar_t> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <short> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <unsigned short> : TrueType {
+};
+
+// type like uint8_t int16_t..... are not basic type
+// http://en.cppreference.com/w/cpp/types/integer
+// http://en.cppreference.com/w/cpp/language/types
+template
+<>
+struct _IsIntergralBase <int> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <unsigned int> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <long> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <unsigned long> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase <long long> : TrueType {
+};
+
+template
+<>
+struct _IsIntergralBase<unsigned long long> : TrueType {
+};
+
+template
+<typename T>
+struct IsIntergral : _IsIntergralBase<typename RemoveCv<T>::type> {
+};
+
+// Checks whether T is a floating - point type.
+// Provides the member constant value which is equal to true, 
+// if T is the type float, double, long double, including any cv - qualified variants.
+// Otherwise, value is equal to false.
+template 
+<typename T>
+struct _IsFloatingPointBase : FalseType {
+};
+
+template
+<>
+struct _IsFloatingPointBase<float> : TrueType {
+};
+
+template
+<>
+struct _IsFloatingPointBase<double> : TrueType {
+
+};
+
+template
+<>
+struct _IsFloatingPointBase<long double> : TrueType {
+};
+
+template
+<typename T>
+struct IsFloatingPoint : _IsFloatingPointBase<typename RemoveCv<T>::type> {
+};
+
+// Checks whether T is an array type. 
+// Provides the member constant value which is equal to true, if T is an array type. 
+// Otherwise, value is equal to false.
+template
+<typename T>
+struct IsArray : FalseType {
+};
+
+// no need to specialization the cv version
+
+template
+<typename T>
+struct IsArray<T[]> : TrueType {
+};
+
+template
+<typename T, size_t N>
+struct IsArray<T[N]> : TrueType {
+};
+
+// Checks whether T is an enumeration type.
+// Provides the member constant value which is equal to true, if T is an enumeration type.
+// Otherwise, value is equal to false.
+template
+<typename T>
+struct IsEnum : FalseType {
+};
+
+template
+<typename T>
+struct IsEnum<enum> : TrueType {
+};
+
